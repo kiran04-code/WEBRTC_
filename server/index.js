@@ -4,7 +4,9 @@ import http from "http"
 const app = express()
 // Attach Socket.io to that server
 const server = http.createServer(app)
-const io = new Server(server,{cors:"*"})
+
+const io = new Server(server, { cors: "*" })
+
 // WebSocket connection event
 io.on("connection", (socket) => {
     console.log(`socket connected`, socket.id)
