@@ -49,9 +49,9 @@ const Room = () => {
     socket.emit("peer:negotiatitneded",{to:remoteSocketId,offer})
   },[])
  useEffect(()=>{
-    peer.peer.addEventListener("negotiationneed",handleNegoration)
+    peer.peer.addEventListener("negotiationneeded",handleNegoration)
   return ()=>{  
-    peer.peer.removeEventListener("negotiationneed",handleNegoration)
+    peer.peer.removeEventListener("negotiationneeded",handleNegoration)
   }
  },[handleNegoration])
  const haadleIncomingCall = useCallback(async({from,offer})=>{
@@ -76,12 +76,13 @@ const Room = () => {
   }, [socket, handlevent, hnadleIncomingCall])
   const videoRef = useRef(null)
   const videoRef2 = useRef(null)
-  if (videoRef.current) {
-    videoRef.current.srcObject = mystrem
-  }
-  if (videoRef2.current) {
-    videoRef2.current.srcObject = remotestrem
-  }
+useEffect(() => {
+  if (videoRef.current) videoRef.current.srcObject = mystrem;
+}, [mystrem]);
+
+useEffect(() => {
+  if (videoRef2.current) videoRef2.current.srcObject = remotestrem;
+}, [remotestrem]);  
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-blue-100 to-purple-200 p-6">
       <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md text-center">
