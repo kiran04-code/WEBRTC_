@@ -15,7 +15,7 @@ const Room = () => {
   }, [])
 
   const handleCallUser = useCallback(async () => {
-    const steram = await navigator.mediaDevices.getUserMedia({ Audio: true, video: true })
+    const steram = await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
     const offer = await peer.getOffer()
     socket.emit("user:call", { to: remoteSocketId, offer })
     setMystream(steram)
@@ -23,20 +23,24 @@ const Room = () => {
   const hnadleIncomingCall = useCallback(async ({ from, offer }) => {
     setRemotesockId(from)
     console.log(`incoming Called from:${from}`, offer)
-    const steram = await navigator.mediaDevices.getUserMedia({ Audio: true, video: true })
+    const steram = await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
     setMystream(steram)
+    
     const ans = await peer.getAnswer(offer)
     console.log(ans)
     socket.emit("call:accept",{to:from,ans})
   }, [])
-
+ const streanmbutton = useCallback(()=>{
+    mystrem.getTracks().forEach(track => {
+        peer.peer.addTrack(track, mystrem);
+      });
+ })
  const handleCallAccepted = useCallback(async({from ,ans})=>{
   await peer.setLocalDescription(ans)
+    streanmbutton()
   console.log("Called Accepted!")
 
-  for(const track of mystrem.getTracks()){
-    peer.peer.addTrack(track,mystrem)
-  }
+ 
  },[mystrem])
  useEffect(()=>{
   peer.peer.addEventListener("track",async (ev) =>{
@@ -49,9 +53,9 @@ const Room = () => {
     socket.emit("peer:negotiatitneded",{to:remoteSocketId,offer})
   },[])
  useEffect(()=>{
-    peer.peer.addEventListener("negotiationneeded",handleNegoration)
-  return ()=>{  
-    peer.peer.removeEventListener("negotiationneeded",handleNegoration)
+    peer.peer.addEventListener("negotiationneed",handleNegoration)
+  return ()=>{
+    peer.peer.removeEventListener("negotiationneed",handleNegoration)
   }
  },[handleNegoration])
  const haadleIncomingCall = useCallback(async({from,offer})=>{
@@ -76,13 +80,12 @@ const Room = () => {
   }, [socket, handlevent, hnadleIncomingCall])
   const videoRef = useRef(null)
   const videoRef2 = useRef(null)
-useEffect(() => {
-  if (videoRef.current) videoRef.current.srcObject = mystrem;
-}, [mystrem]);
-
-useEffect(() => {
-  if (videoRef2.current) videoRef2.current.srcObject = remotestrem;
-}, [remotestrem]);  
+  if (videoRef.current) {
+    videoRef.current.srcObject = mystrem
+  }
+  if (videoRef2.current) {
+    videoRef2.current.srcObject = remotestrem
+  }
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-blue-100 to-purple-200 p-6">
       <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md text-center">
@@ -95,11 +98,16 @@ useEffect(() => {
             ? `Connected Email ID: ${remoteSocketId}`
             : "No One in Room"}
         </h4>
-        <div className="mt-6">
+        <div className="mt-6 md:flex gap-2">
           {
             remoteSocketId ? <button onClick={handleCallUser} className="px-6 py-3 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-700 transition duration-300">
               Make Call
-            </button> : null
+            </button>  : null
+          }
+          {
+            remoteSocketId ? <button onClick={streanmbutton} className="px-6 ml-2 py-3 mt-5 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-700 transition duration-300">
+             See Your Friend
+            </button>  : null
           }
         </div>
       </div>
@@ -114,7 +122,6 @@ useEffect(() => {
               muted
               className="mt-8 w-80 rounded-xl shadow-lg border-4 border-white"
             ></video>
-
             <h1 className='text-center text-2xl'>You</h1>
           </div>
         )}
