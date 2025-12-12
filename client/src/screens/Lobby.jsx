@@ -1,23 +1,38 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useCallback } from 'react'
 import { useState } from 'react'
+import { useSockets } from '../context/socket'
+import { useNavigate } from 'react-router-dom'
 
 const Lobby = () => {
+
+    const socket = useSockets()
     const [email, setemail] = useState("")
     const [roomid, setRoomId] = useState("")
+    const navigate = useNavigate()
     const data = new FormData()
     data.append("email:", email)
     data.append("RoomId", roomid)
     const handleonsubmit = useCallback(
         (e) => {
             e.preventDefault()
-
-            console.log(data)
+            socket.emit("room:join", { email, roomid })
             setRoomId("")
             setemail("")
         },
-        [data]
+        [data, socket]
     )
+    const handleroomJoine = useCallback((data) => {
+        const { email, roomid } = data
+        navigate(`/room/${roomid}`)
+        
+    }, [])
+    useEffect(() => {
+        socket.on('room:join', handleroomJoine)
+        return () => {
+            socket.off("room:join", handleroomJoine)
+        }
+    }, [socket])
     return (
         <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
             <div className="bg-white shadow-xl border border-gray-200 rounded-xl p-10 w-full max-w-lg">

@@ -4,7 +4,7 @@ const SocketContext = createContext(null)
 
 export const SocketContextProvider = ({ children }) => {
     const socket = useMemo(() => {
-        io("http://localhost:3000")
+        return io("http://localhost:3000")
     }, []);
 
     return (
